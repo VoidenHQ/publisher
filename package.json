@@ -1,0 +1,26 @@
+{
+  "name": "@voiden/publish",
+  "version": "1.0.0",
+  "description": "Static documentation generator for Voiden projects",
+  "type": "module",
+  "bin": "./dist/cli.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "yaml": "^2.7.0",
+    "unified": "^11.0.5",
+    "remark-parse": "^11.0.0",
+    "remark-gfm": "^4.0.0",
+    "chokidar": "^4.0.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}
