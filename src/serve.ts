@@ -51,7 +51,7 @@ export async function serve(inputDir: string, outputDir: string, port: number, o
   try {
     const { watch } = await import("chokidar");
     const watcher = watch(inputDir, {
-      ignored: /(^|[\/\\])(\.|node_modules|void-docs)/,
+      ignored: /(^|[\/\\])(\.|node_modules|voiden-publish)/,
       persistent: true,
       ignoreInitial: true,
     });

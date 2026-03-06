@@ -35,7 +35,7 @@ const DEFAULTS: PublishConfig = {
 export async function loadConfig(inputDir: string): Promise<PublishConfig> {
   let raw: Record<string, unknown> = {};
   try {
-    const content = await readFile(join(inputDir, "voiden.publish.yaml"), "utf-8");
+    const content = await readFile(join(inputDir, "voiden-publish", "config.yaml"), "utf-8");
     raw = (parseYaml(content) as Record<string, unknown>) || {};
   } catch {
     // No config file — use defaults
@@ -52,20 +52,22 @@ export async function loadConfig(inputDir: string): Promise<PublishConfig> {
     customCSS: "",
   };
 
+  const configDir = join(inputDir, "voiden-publish");
+
   // Resolve logo
   if (typeof raw.logo === "string" && raw.logo) {
-    config.logo = await resolveAsset(inputDir, raw.logo, "svg");
+    config.logo = await resolveAsset(configDir, raw.logo, "svg");
   }
 
   // Resolve favicon
   if (typeof raw.favicon === "string" && raw.favicon) {
-    config.favicon = await resolveAsset(inputDir, raw.favicon, "datauri");
+    config.favicon = await resolveAsset(configDir, raw.favicon, "datauri");
   }
 
   // Resolve custom CSS
   if (typeof raw.customCSS === "string" && raw.customCSS) {
     try {
-      config.customCSS = await readFile(join(inputDir, raw.customCSS), "utf-8");
+      config.customCSS = await readFile(join(configDir, raw.customCSS), "utf-8");
     } catch {
       // Ignore missing CSS file
     }

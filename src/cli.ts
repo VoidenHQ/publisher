@@ -10,7 +10,7 @@ const command = args[0];
 
 const inputDir = resolve(args.find((a) => !a.startsWith("-") && a !== command) || ".");
 const outFlag = args.indexOf("--out");
-const outputDir = outFlag !== -1 ? resolve(args[outFlag + 1]) : resolve(inputDir, "void-docs");
+const outputDir = outFlag !== -1 ? resolve(args[outFlag + 1]) : resolve(inputDir, "voiden-publish", "out");
 const port = parseInt(args.find((_, i) => args[i - 1] === "--port") || "4040", 10);
 const repoUrl = args.find((_, i) => args[i - 1] === "--repo-url") || "";
 

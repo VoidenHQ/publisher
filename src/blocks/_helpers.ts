@@ -71,7 +71,7 @@ export function renderCellNode(cell: CellNode): string {
   if (cell.type === "text") return esc(cell.value || cell.text || "");
   if (cell.type === "fileLink") {
     const filename = (cell.attrs?.filename as string) || (cell.attrs?.filePath as string) || "";
-    const href = ((cell.attrs?.filePath as string) || "").replace(/\.void$/, ".html");
+    const href = ((cell.attrs?.filePath as string) || "").replace(/\.void$/, "");
     return `<a href="${esc(href)}" class="file-link">${esc(filename)}</a>`;
   }
   if (cell.type === "mixed" && cell.children) {
@@ -96,7 +96,7 @@ export function extractCellContent(cell: CellNode): string {
           if (node.type === "text") return esc(node.text || node.value || "");
           if (node.type === "fileLink") {
             const filename = (node.attrs?.filename as string) || (node.attrs?.filePath as string) || "";
-            const href = ((node.attrs?.filePath as string) || "").replace(/\.void$/, ".html");
+            const href = ((node.attrs?.filePath as string) || "").replace(/\.void$/, "");
             return `<a href="${esc(href)}" class="file-link">${esc(filename)}</a>`;
           }
           return esc(extractText(node.content));

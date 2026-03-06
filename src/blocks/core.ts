@@ -41,7 +41,7 @@ function renderVoidTable(block: Block): string {
 
 function renderFileLinkBlock(block: Block): string {
   const filename = (block.attrs?.filename as string) || (block.attrs?.filePath as string) || "";
-  const href = ((block.attrs?.filePath as string) || "").replace(/\.void$/, ".html");
+  const href = ((block.attrs?.filePath as string) || "").replace(/\.void$/, "");
   return `<div class="void-block void-file-link">
   <a href="${esc(href)}" class="file-link">${esc(filename)}</a>
 </div>`;
@@ -50,7 +50,7 @@ function renderFileLinkBlock(block: Block): string {
 function renderLinkedBlock(block: Block, ctx: RenderContext): string {
   const originalFile = (block.attrs?.originalFile as string) || (block.attrs?.filePath as string) || "";
   const blockUid = (block.attrs?.blockUid as string) || "";
-  const href = originalFile.replace(/\.void$/, ".html");
+  const href = originalFile.replace(/\.void$/, "");
 
   const resolvedBlock = ctx.blockIndex?.get(blockUid);
   let resolvedHtml = "";

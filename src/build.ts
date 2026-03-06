@@ -8,7 +8,7 @@ import { htmlPage, renderSidebar } from "./template.js";
 import type { Block } from "./blocks/_registry.js";
 import type { PublishConfig } from "./config.js";
 
-const IGNORED = new Set([".git", ".voiden", "node_modules", "void-docs", ".env", ".env.local"]);
+const IGNORED = new Set([".git", ".voiden", "node_modules", "voiden-publish", ".env", ".env.local"]);
 
 interface FileEntry {
   fullPath: string;
@@ -52,7 +52,7 @@ function buildFileTree(files: FileEntry[]): FileTreeEntry[] {
 
   for (const file of files) {
     const parts = file.relPath.split("/");
-    const href = file.relPath.replace(/\.(void|md)$/, ".html");
+    const href = file.relPath.replace(/\.(void|md)$/, "");
     const name = basename(file.relPath, extname(file.relPath));
 
     if (parts.length === 1) {
@@ -76,8 +76,8 @@ function buildFileTree(files: FileEntry[]): FileTreeEntry[] {
   };
 
   tree.sort((a, b) => {
-    if (a.children && !b.children) return 1;
-    if (!a.children && b.children) return -1;
+    if (a.children && !b.children) return -1;
+    if (!a.children && b.children) return 1;
     const pa = priority(a.name);
     const pb = priority(b.name);
     if (pa !== pb) return pa - pb;
@@ -222,7 +222,7 @@ export async function buildSite(inputDir: string, outputDir: string, opts: Build
     const parts = f.relPath.split("/");
     return {
       name: basename(f.relPath, extname(f.relPath)),
-      href: f.relPath.replace(/\.(void|md)$/, ".html"),
+      href: f.relPath.replace(/\.(void|md)$/, ""),
       folder: parts.length > 1 ? parts.slice(0, -1).join("/") : null,
     };
   });
@@ -235,7 +235,7 @@ export async function buildSite(inputDir: string, outputDir: string, opts: Build
     const requestBlocks = collectRequestBlocks(nodes);
     const title = extractTitle(source, file.relPath);
     const outputPath = join(outputDir, file.relPath.replace(/\.(void|md)$/, ".html"));
-    const currentHref = file.relPath.replace(/\.(void|md)$/, ".html");
+    const currentHref = file.relPath.replace(/\.(void|md)$/, "");
     const sidebar = renderSidebar(fileTree, currentHref);
 
     const page = htmlPage(title, bodyHtml, {
@@ -265,7 +265,7 @@ export async function buildSite(inputDir: string, outputDir: string, opts: Build
 
   // Write index.html redirecting to first file
   if (validFiles.length > 0) {
-    const firstHref = validFiles[0].relPath.replace(/\.(void|md)$/, ".html");
+    const firstHref = validFiles[0].relPath.replace(/\.(void|md)$/, "");
     const indexPath = join(outputDir, "index.html");
     const indexHtml = `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${firstHref}" /></head><body></body></html>`;
     await writeFile(indexPath, indexHtml, "utf-8");
