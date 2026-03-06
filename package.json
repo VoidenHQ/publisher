@@ -1,6 +1,6 @@
 {
   "name": "@voiden/publish",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Static documentation generator for Voiden projects",
   "type": "module",
   "bin": {
