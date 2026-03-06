@@ -3,6 +3,7 @@
 import { resolve } from "path";
 import { buildSite } from "./build.js";
 import { serve } from "./serve.js";
+import { loadConfig } from "./config.js";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -14,10 +15,12 @@ const port = parseInt(args.find((_, i) => args[i - 1] === "--port") || "4040", 1
 const repoUrl = args.find((_, i) => args[i - 1] === "--repo-url") || "";
 
 if (command === "build") {
-  await buildSite(inputDir, outputDir, { repoUrl });
+  const config = await loadConfig(inputDir);
+  await buildSite(inputDir, outputDir, { repoUrl, config });
   console.log(`Built to ${outputDir}`);
 } else if (command === "serve") {
-  await serve(inputDir, outputDir, port, { repoUrl });
+  const config = await loadConfig(inputDir);
+  await serve(inputDir, outputDir, port, { repoUrl, config });
 } else {
   console.log(`Usage:
   voiden-docs build [dir] [--out <dir>] [--repo-url <url>]

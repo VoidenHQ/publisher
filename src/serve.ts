@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import { readFile } from "fs/promises";
 import { join, extname } from "path";
 import { buildSite } from "./build.js";
+import { loadConfig, type PublishConfig } from "./config.js";
 
 const MIME: Record<string, string> = {
   ".html": "text/html",
@@ -16,6 +17,7 @@ const MIME: Record<string, string> = {
 
 export interface ServeOptions {
   repoUrl?: string;
+  config?: PublishConfig;
 }
 
 export async function serve(inputDir: string, outputDir: string, port: number, opts: ServeOptions = {}): Promise<void> {
@@ -59,7 +61,8 @@ export async function serve(inputDir: string, outputDir: string, port: number, o
       if (debounce) clearTimeout(debounce);
       debounce = setTimeout(async () => {
         console.log("Rebuilding...");
-        const r = await buildSite(inputDir, outputDir, opts);
+        const freshConfig = await loadConfig(inputDir);
+        const r = await buildSite(inputDir, outputDir, { ...opts, config: freshConfig });
         console.log(`Rebuilt ${r.fileCount} pages`);
       }, 300);
     };

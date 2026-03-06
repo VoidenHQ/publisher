@@ -6,6 +6,7 @@ import type { ParsedNode } from "./parser.js";
 import { renderNodes, collectPageBlocks, collectRequestBlocks } from "./renderer.js";
 import { htmlPage, renderSidebar } from "./template.js";
 import type { Block } from "./blocks/_registry.js";
+import type { PublishConfig } from "./config.js";
 
 const IGNORED = new Set([".git", ".voiden", "node_modules", "void-docs", ".env", ".env.local"]);
 
@@ -22,6 +23,7 @@ interface FileTreeEntry {
 
 interface BuildOptions {
   repoUrl?: string;
+  config?: PublishConfig;
 }
 
 async function collectFiles(dir: string, baseDir: string): Promise<FileEntry[]> {
@@ -242,6 +244,7 @@ export async function buildSite(inputDir: string, outputDir: string, opts: Build
       pageBlocks,
       requestBlocks,
       repoUrl,
+      config: opts.config,
     });
 
     await mkdir(dirname(outputPath), { recursive: true });

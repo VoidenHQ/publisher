@@ -1,4 +1,5 @@
 import type { ProseMirrorNode } from "./parser.js";
+import type { PublishConfig } from "./config.js";
 
 interface FileTreeEntry {
   name: string;
@@ -12,13 +13,54 @@ interface HtmlPageOptions {
   pageBlocks?: ProseMirrorNode[];
   requestBlocks?: ProseMirrorNode[];
   repoUrl?: string;
+  config?: PublishConfig;
 }
 
-export function htmlPage(title: string, bodyHtml: string, { sidebar = "", allFiles = "[]", pageBlocks = [], requestBlocks = [], repoUrl = "" }: HtmlPageOptions = {}): string {
+export function htmlPage(title: string, bodyHtml: string, { sidebar = "", allFiles = "[]", pageBlocks = [], requestBlocks = [], repoUrl = "", config }: HtmlPageOptions = {}): string {
   const pageBlocksEncoded = Buffer.from(JSON.stringify(pageBlocks), "utf-8").toString("base64");
   const requestBlocksEncoded = Buffer.from(JSON.stringify(requestBlocks), "utf-8").toString("base64");
   const hasBlocks = pageBlocks.length > 0;
   const hasRequests = requestBlocks.length > 0;
+
+  const siteTitle = config?.title || "Voiden Docs";
+  const accentColor = config?.accentColor || "";
+  const faviconTag = config?.favicon ? `<link rel="icon" href="${esc(config.favicon)}" />` : "";
+  const headTags = config?.headTags || "";
+  const customCSS = config?.customCSS || "";
+
+  // Build accent color CSS overrides
+  let accentOverride = "";
+  if (accentColor) {
+    accentOverride = `<style>:root { --accent: ${esc(accentColor)}; --accent-dim: ${esc(accentColor)}14; --accent-subtle: ${esc(accentColor)}26; }</style>`;
+  }
+
+  // Build logo HTML
+  let logoHtml: string;
+  if (config?.logo) {
+    const logo = config.logo;
+    if (logo.trimStart().startsWith("<")) {
+      // Inline SVG
+      logoHtml = `<div class="logo">${logo}<span>${esc(siteTitle)}</span></div>`;
+    } else {
+      // URL or data URI
+      logoHtml = `<div class="logo"><img src="${esc(logo)}" alt="" width="20" height="20" /><span>${esc(siteTitle)}</span></div>`;
+    }
+  } else {
+    logoHtml = `<div class="logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+          <span>${esc(siteTitle)}</span>
+        </div>`;
+  }
+
+  // Build footer HTML
+  let footerHtml = "";
+  if (config?.footer && (config.footer.links.length > 0 || config.footer.copyright)) {
+    const linksHtml = config.footer.links.map(l => `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join("");
+    footerHtml = `<footer class="site-footer">
+      ${linksHtml ? `<div class="footer-links">${linksHtml}</div>` : ""}
+      ${config.footer.copyright ? `<div class="footer-copyright">${esc(config.footer.copyright)}</div>` : ""}
+    </footer>`;
+  }
 
   const actionBar = `<div class="page-action-bar">
   <div class="action-bar-left">
@@ -67,17 +109,18 @@ export function htmlPage(title: string, bodyHtml: string, { sidebar = "", allFil
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${esc(title)} — Voiden Docs</title>
+  <title>${esc(title)} — ${esc(siteTitle)}</title>
+  ${faviconTag}
   <style>${CSS}</style>
+  ${customCSS ? `<style>${customCSS}</style>` : ""}
+  ${accentOverride}
+  ${headTags}
 </head>
 <body>
   <div class="layout">
     <aside class="sidebar">
       <div class="sidebar-header">
-        <div class="logo">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
-          <span>Voiden Docs</span>
-        </div>
+        ${logoHtml}
       </div>
       <div class="search-container">
         <div class="search-box">
@@ -94,6 +137,7 @@ export function htmlPage(title: string, bodyHtml: string, { sidebar = "", allFil
     <main class="content">
       <article>${actionBar}${bodyHtml}</article>
     </main>
+    ${footerHtml}
   </div>
   <script>
     const ALL_FILES = ${allFiles};
@@ -1036,6 +1080,40 @@ table.md-table, table.void-table {
   background: var(--red-dim);
 }
 
+/* ==================== FOOTER ==================== */
+.site-footer {
+  margin-left: var(--sidebar-width);
+  padding: 32px 56px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.footer-links a {
+  color: var(--text-tertiary);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.footer-links a:hover {
+  color: var(--text-secondary);
+}
+
+.footer-copyright {
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 860px) {
   .sidebar {
@@ -1044,5 +1122,6 @@ table.md-table, table.void-table {
   }
   .sidebar.open { transform: translateX(0); }
   .content { margin-left: 0; padding: 24px 20px 60px; }
+  .site-footer { margin-left: 0; padding: 24px 20px; }
 }
 `;
